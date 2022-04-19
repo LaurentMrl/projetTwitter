@@ -23,8 +23,8 @@ import string
 
 ps = PorterStemmer()
 
-# stopword + stemmer
-nltk.download('stopwords')
+# stopwords + stemmer
+#nltk.download('stopwords')
 stopWords = set(stopwords.words('french'))
 final_stopwords_list = list(fr_stop)
 stemmer = SnowballStemmer('french')
@@ -61,23 +61,32 @@ def wordcloud(df):
     wordcloud.to_file('png/' + df['candidat'].max() + '.png')
 
 
-def create_model(fit: bool = True, save: bool = True,
-                 model_name: string = f'model_{date.today().strftime("%d/%m/%Y")}'):
-    # Load csv
-    df = pd.read_csv("csv/train.csv")
+def create_model(preprocess: bool = True, fit: bool = True, save: bool = True, split_test_size: int = 0.20,
+                 split_random_state: int = 42, rf_n_estimators: int = 400,
+                 rf_criterion: string = "entropy", rf_random_state: int = 0,
+                 model_name: string = ''):
+    if preprocess:
+        # Load csv
+        df = pd.read_csv("csv/train.csv")
 
-    # remove useless column and rename them
-    df = df.drop(['film-url'], axis=1)
-    df = df.drop(['Unnamed: 0'], axis=1)
-    df = df.rename(columns={"polarity": "label"})
-    df.head()
+        # remove useless column and rename them
+        df = df.drop(['film-url'], axis=1)
+        df = df.drop(['Unnamed: 0'], axis=1)
+        df = df.rename(columns={"polarity": "label"})
+        df.head()
 
-    clearData(df)
+        clearData(df)
+
+        df.to_csv(r'csv\preprocessed_csv/cleared_train.csv')
+    else:
+        # Load csv
+        df = pd.read_csv(r"csv/preprocessed_csv/cleared_train.csv", index_col=0)
 
     # data split train / test
     X = df['clear_review']
     y = df['label']
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.20, random_state=42)
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=split_test_size,
+                                                        random_state=split_random_state)
 
     # dataframe train
     data_train = pd.DataFrame(columns=['clear_review', 'label'])
@@ -90,12 +99,13 @@ def create_model(fit: bool = True, save: bool = True,
     data_test['label'] = y_test.values
 
     # vectoriz
-    vectorized_train = tfidfvectorizer.fit_transform(X_train)
-    vectorized_test = tfidfvectorizer.transform(X_test)
+    vectorized_train = tfidfvectorizer.fit_transform(X_train.values.astype('U'))
+    vectorized_test = tfidfvectorizer.transform(X_test.values.astype('U'))
 
     if fit:
         # model fitting
-        rfClassifier = RandomForestClassifier(n_estimators=400, criterion="entropy", random_state=0)
+        rfClassifier = RandomForestClassifier(n_estimators=rf_n_estimators, criterion=rf_criterion,
+                                              random_state=rf_random_state)
         rfClassifier.fit(vectorized_train, y_train)
 
         # model scoring
@@ -103,6 +113,9 @@ def create_model(fit: bool = True, save: bool = True,
         print('model score : ' + rfPreds)
 
         if save:
+            # if model is not name use default name
+            if model_name == '':
+                model_name = f'model_nlp_n_estimator_{rf_n_estimators}_criterion_{rf_criterion}_random_state_{rf_random_state}'
             # save
             dump(rfClassifier, f"models/{model_name}.joblib")
 
@@ -134,7 +147,7 @@ def predict_tweets(model_name: string = "model_nlp_n_estimator_400_criterion_ent
     df_final["candidat"] = df_final["review"].apply(
         lambda x: ' '.join([word.lower() for word in x.split() if word.lower() in searchList]))
     df_final["candidat"] = df_final["candidat"].apply(lambda x: re.sub('([a-zé]* .*)|^$', 'None', x))
-    df_final["candidat"] = df_final["candidat"].apply(lambda x: re.sub('dupont|aigan', 'dupont-aigan', x))
+    df_final["candidat"] = df_final["candidat"].apply(lambda x: re.sub('dupont|aignan', 'dupont-aignan', x))
     df_final["candidat"] = df_final["candidat"].apply(lambda x: re.sub('pen', 'le pen', x))
 
     df_final = df_final.sort_values(by=['candidat'])
@@ -146,7 +159,7 @@ def predict_tweets(model_name: string = "model_nlp_n_estimator_400_criterion_ent
     df_pecresse = df_final.loc[df_final['candidat'] == 'pécresse']
     df_melenchon = df_final.loc[df_final['candidat'] == 'mélenchon']
     df_jadot = df_final.loc[df_final['candidat'] == 'jadot']
-    df_dupont_aignan = df_final.loc[df_final['candidat'] == 'dupont-aigan']
+    df_dupont_aignan = df_final.loc[df_final['candidat'] == 'dupont-aignan']
     df_arthaud = df_final.loc[df_final['candidat'] == 'arthaud']
     df_hidalgo = df_final.loc[df_final['candidat'] == 'hidalgo']
     df_poutou = df_final.loc[df_final['candidat'] == 'poutou']
@@ -170,5 +183,5 @@ def predict_tweets(model_name: string = "model_nlp_n_estimator_400_criterion_ent
     wordcloud(df_null)
 
 
-create_model(fit=False)
+create_model(preprocess=False, fit=False)
 predict_tweets()

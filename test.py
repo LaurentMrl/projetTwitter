@@ -1,6 +1,7 @@
 import concurrent.futures
 import time
 
+import pandas as pd
 from tqdm import tqdm
 
 
@@ -42,4 +43,27 @@ def main():
     print(f'Work done: {future.result()}')
 
 
-main()
+
+
+candidats = ["Zemmour", "Macron", "Pécresse", "Mélenchon", "Jadot", "Dupont-Aignan", "Arthaud", "Hidalgo", "Poutou",
+             "Le Pen", "Roussel", "Lassalle"]
+
+candidats = sorted(candidats, reverse=True)
+
+donnee = pd.read_csv("../nlp/csv/df_final.csv")
+
+reponse_positive = []
+reponse_negative = []
+for choix in donnee['candidat']:
+    if donnee['predicted'] == True:
+        reponse_positive.append(choix)
+    else:
+        reponse_negative.append(choix)
+
+
+apparition_positive = []
+apparition_negative = []
+
+for candidat in candidats:
+    apparition_positive.append(donnee.loc[donnee['candidat'] == candidat]['predicted'].sum())
+    apparition_negative.append((donnee.loc[donnee['candidat'] == candidat]['predicted'].count) - (donnee.loc[donnee['candidat'] == candidat]['predicted'].sum()))
