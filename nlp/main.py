@@ -58,7 +58,7 @@ def wordcloud(df):
     plt.imshow(wordcloud)
     plt.axis("off")
     plt.show()
-    wordcloud.to_file('png/' + df['candidat'].max() + '.png')
+    wordcloud.to_file('../web/static/img/' + df['candidat'].max() + '.png')
 
 
 def create_model(preprocess: bool = True, fit: bool = True, save: bool = True, split_test_size: int = 0.20,
