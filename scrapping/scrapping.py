@@ -69,7 +69,7 @@ def appendToCSV(bigList, account: str):
     print("Tweet appened to CSV")
 
 
-def scraping_user(account: str, n: int = 500):
+def scraping_user(account: str, n: int = 1500):
     create_csv(account)
     tweets = api.user_timeline(screen_name=account, count=n, include_rts=False, tweet_mode='extended')
     for tweet in tweets:

@@ -78,14 +78,35 @@
 
     {% if title == 'Search' %}
     <form action="data_search" method = "POST">
-        <p>Field1 <input type = "text" name = "Twitter_user" /></p>
-        <p><input type = "submit" value = "submit" /></p>
+        <p style="margin-top: 2%; text-align: center">Utilisateur <br> <input type = "text" name = "Twitter_user" /></p>
+        <p style="text-align: center"><input type = "submit" value = "Chercher" /></p>
     </form>
     {% endif %}
 
 
     {% if title == 'Search data' %}
+    <h2 style="margin-top: 2%; text-align: center">D'après mon analyse, l'utilisateur @{{twitter_user}} est potentiellement une personne de {{parti_user}}</h2>
+    <h3 style="text-align: center">Resultat : Gauche {{result_gauche}}% | Droite {{result_droite}}%</h3>
+    <hr>
+    {% if result_gauche == 0 and result_droite == 0 %}
+        <h4 style="text-align: center">Resultat non concluant, du 0 un manque de donnée.</h4>
+    {% else %}
+    <h4 style="text-align: center">Voici un tableau recapitulatif des avis en fonction des candidats</h4>
+    <div style="text-align: center">
+        <img src="data:image/jpeg;base64, {{ img }}">
+    </div>
 
+    <h4 style="text-align: center">Voici les mots les plus utilise dans ces tweets en fonction de chaque candidats</h4>
+    <div class="grid_container">
+        {% for hist in hists %}
+        <div>
+            <img src="static/{{hist}}" alt="{{hist}}">
+
+            <p style="text-align: center">{{hist[len_user:-4]}}</p>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
     {% endif %}
 
 

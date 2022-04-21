@@ -64,7 +64,7 @@ def wordcloud(df, account: str = ''):
         if account == '':
             wordcloud.to_file('../web/static/img/candidats/' + df['candidat'].max() + '.png')
         else:
-            wordcloud.to_file(f'../web/static/img/users/{account}_' + df['candidat'].max() + '.png')
+            wordcloud.to_file(f'../web/static/img/users/{account}/{account}_' + df['candidat'].max() + '.png')
 
 
 def create_model(preprocess: bool = True, fit: bool = True, save: bool = True, split_test_size: int = 0.20,
@@ -192,7 +192,7 @@ def predict_tweets_candidats(model_name: string = "model_nlp_n_estimator_400_cri
 def predict_tweets_user(account: str,
                         model_name: string = "model_nlp_n_estimator_400_criterion_entropy_random_state_0.joblib"):
     # load
-    rfClassifier = load(f"models/{model_name}")
+    rfClassifier = load(f"../nlp/models/{model_name}")
 
     # Preprocessing tweet data
     df_tweet = pd.read_csv(f"{csv_dir}/users/{account}/tweets_{account}.csv")
