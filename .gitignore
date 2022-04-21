@@ -129,3 +129,4 @@ dmypy.json
 .pyre/
 /nlp/models/
 /nlp/csv/preprocessed_csv/
+/scrapping/csv/train_test/preprocessed_csv/

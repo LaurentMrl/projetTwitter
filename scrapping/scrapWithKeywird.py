@@ -19,7 +19,7 @@ api = tweepy.API(auth)
 
 search_word = "Zemmour"
 
-tweet_file = "csv/tweets.csv"
+tweet_file = "csv/candidats/tweets.csv"
 
 searchList = ["Zemmour", "Macron", "Pécresse", "Mélenchon", "Jadot", "Dupont-Aignan", "Arthaud", "Hidalgo", "Poutou",
               "Le Pen", "Roussel", "Lassalle"]

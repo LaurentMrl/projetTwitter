@@ -28,6 +28,9 @@
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('wordcloud') }}">WordCloud<span class="sr-only">(current)</span></a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('search') }}">Search<span class="sr-only">(current)</span></a>
+                    </li>
                 </ul>
             </div>
         </nav>
@@ -41,9 +44,9 @@
 <div>
 
     {% if title == 'Home' %}
-        <div>
-            <p>yo</p>
-        </div>
+    <div style="margin-top: 2%">
+        <p style="text-align: center">Nous avons choisi de réaliser ce projet, car c’est un sujet important pendant cette période. Nous avons trouvé intéressant de prendre des données depuis Twitter, car c’est une plateforme très utilisée pour parler de politique.</p>
+    </div>
 
     {% else %}
     {% endif %}
@@ -65,13 +68,26 @@
         <div>
             <img src="static/{{hist}}" alt="{{hist}}">
 
-            <p style="text-align: center">{{hist[4:-4]}}</p>
+            <p style="text-align: center">{{hist[14:-4]}}</p>
         </div>
         {% endfor %}
     </div>
     {% endif %}
     {% else %}
     {% endif %}
+
+    {% if title == 'Search' %}
+    <form action="data_search" method = "POST">
+        <p>Field1 <input type = "text" name = "Twitter_user" /></p>
+        <p><input type = "submit" value = "submit" /></p>
+    </form>
+    {% endif %}
+
+
+    {% if title == 'Search data' %}
+
+    {% endif %}
+
 
 
 

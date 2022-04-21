@@ -21,10 +21,12 @@ from spacy.lang.fr.stop_words import STOP_WORDS as fr_stop
 from joblib import dump, load
 import string
 
+csv_dir = '../scrapping/csv'
+
 ps = PorterStemmer()
 
 # stopwords + stemmer
-#nltk.download('stopwords')
+# nltk.download('stopwords')
 stopWords = set(stopwords.words('french'))
 final_stopwords_list = list(fr_stop)
 stemmer = SnowballStemmer('french')
@@ -45,20 +47,24 @@ def clearData(dfColumn):
         lambda x: ' '.join([stemmer.stem(y) for y in x.split()]))  # Stem every word.
 
 
-def wordcloud(df):
-    coms = df
-    coms.head()
-    list_word = ''
-    for s in coms['review']:
-        for word in s.split():
-            if s not in stopWords:
-                list_word += s
+def wordcloud(df, account: str = ''):
+    if not df.empty:
+        coms = df
+        coms.head()
+        list_word = ''
+        for s in coms['review']:
+            for word in s.split():
+                if s not in stopWords:
+                    list_word += s
 
-    wordcloud = WordCloud(background_color='white', max_words=50).generate(list_word)
-    plt.imshow(wordcloud)
-    plt.axis("off")
-    plt.show()
-    wordcloud.to_file('../web/static/img/' + df['candidat'].max() + '.png')
+        wordcloud = WordCloud(background_color='white', max_words=50).generate(list_word)
+        plt.imshow(wordcloud)
+        plt.axis("off")
+        plt.show()
+        if account == '':
+            wordcloud.to_file('../web/static/img/candidats/' + df['candidat'].max() + '.png')
+        else:
+            wordcloud.to_file(f'../web/static/img/users/{account}_' + df['candidat'].max() + '.png')
 
 
 def create_model(preprocess: bool = True, fit: bool = True, save: bool = True, split_test_size: int = 0.20,
@@ -67,7 +73,7 @@ def create_model(preprocess: bool = True, fit: bool = True, save: bool = True, s
                  model_name: string = ''):
     if preprocess:
         # Load csv
-        df = pd.read_csv("csv/train.csv")
+        df = pd.read_csv(f"{csv_dir}/train_test/train.csv")
 
         # remove useless column and rename them
         df = df.drop(['film-url'], axis=1)
@@ -77,10 +83,10 @@ def create_model(preprocess: bool = True, fit: bool = True, save: bool = True, s
 
         clearData(df)
 
-        df.to_csv(r'csv\preprocessed_csv/cleared_train.csv')
+        df.to_csv(f'{csv_dir}/train_test/preprocessed_csv/cleared_train.csv')
     else:
         # Load csv
-        df = pd.read_csv(r"csv/preprocessed_csv/cleared_train.csv", index_col=0)
+        df = pd.read_csv(f'{csv_dir}/train_test/preprocessed_csv/cleared_train.csv', index_col=0)
 
     # data split train / test
     X = df['clear_review']
@@ -120,12 +126,12 @@ def create_model(preprocess: bool = True, fit: bool = True, save: bool = True, s
             dump(rfClassifier, f"models/{model_name}.joblib")
 
 
-def predict_tweets(model_name: string = "model_nlp_n_estimator_400_criterion_entropy_random_state_0.joblib"):
+def predict_tweets_candidats(model_name: string = "model_nlp_n_estimator_400_criterion_entropy_random_state_0.joblib"):
     # load
     rfClassifier = load(f"models/{model_name}")
 
     # Preprocessing tweet data
-    df_tweet = pd.read_csv("csv/tweets.csv")
+    df_tweet = pd.read_csv(f"{csv_dir}/candidats/tweets.csv")
     clearData(df_tweet)
     vectorized_tweets = tfidfvectorizer.transform(df_tweet["clear_review"])
 
@@ -152,7 +158,7 @@ def predict_tweets(model_name: string = "model_nlp_n_estimator_400_criterion_ent
 
     df_final = df_final.sort_values(by=['candidat'])
 
-    df_final.to_csv(r'csv\df_final.csv')
+    df_final.to_csv(f'{csv_dir}/candidats/df_final.csv')
 
     df_zemmour = df_final.loc[df_final['candidat'] == 'zemmour']
     df_macron = df_final.loc[df_final['candidat'] == 'macron']
@@ -183,5 +189,73 @@ def predict_tweets(model_name: string = "model_nlp_n_estimator_400_criterion_ent
     wordcloud(df_null)
 
 
-create_model(preprocess=False, fit=False)
-predict_tweets()
+def predict_tweets_user(account: str,
+                        model_name: string = "model_nlp_n_estimator_400_criterion_entropy_random_state_0.joblib"):
+    # load
+    rfClassifier = load(f"models/{model_name}")
+
+    # Preprocessing tweet data
+    df_tweet = pd.read_csv(f"{csv_dir}/users/{account}/tweets_{account}.csv")
+    clearData(df_tweet)
+    vectorized_tweets = tfidfvectorizer.transform(df_tweet["clear_review"])
+
+    # #model scoring on tweet
+    # rfPreds_tweet = rfClassifier.score(vectorized_tweets, df_tweet["label"])
+    # print('tweet score : ' + rfPreds_tweet)
+
+    # model prediction on tweet
+    rfPreds_tweet = rfClassifier.predict(vectorized_tweets)
+
+    # graph
+
+    df_final = df_tweet
+    df_final["predicted"] = rfPreds_tweet
+    df_final["candidat"] = ''
+
+    searchList = ["zemmour", "macron", "pécresse", "mélenchon", "jadot", "dupont", "aignan", "arthaud", "hidalgo",
+                  "poutou", "pen", "roussel", "lassalle"]
+    df_final["candidat"] = df_final["review"].apply(
+        lambda x: ' '.join([word.lower() for word in x.split() if word.lower() in searchList]))
+    df_final["candidat"] = df_final["candidat"].apply(lambda x: re.sub('([a-zé]* .*)|^$', 'None', x))
+    df_final["candidat"] = df_final["candidat"].apply(lambda x: re.sub('dupont|aignan', 'dupont-aignan', x))
+    df_final["candidat"] = df_final["candidat"].apply(lambda x: re.sub('pen', 'le pen', x))
+
+    df_final = df_final.sort_values(by=['candidat'])
+
+    df_final.to_csv(f'{csv_dir}/users/{account}/df_final_{account}.csv')
+
+    df_zemmour = df_final.loc[df_final['candidat'] == 'zemmour']
+    df_macron = df_final.loc[df_final['candidat'] == 'macron']
+    df_pecresse = df_final.loc[df_final['candidat'] == 'pécresse']
+    df_melenchon = df_final.loc[df_final['candidat'] == 'mélenchon']
+    df_jadot = df_final.loc[df_final['candidat'] == 'jadot']
+    df_dupont_aignan = df_final.loc[df_final['candidat'] == 'dupont-aignan']
+    df_arthaud = df_final.loc[df_final['candidat'] == 'arthaud']
+    df_hidalgo = df_final.loc[df_final['candidat'] == 'hidalgo']
+    df_poutou = df_final.loc[df_final['candidat'] == 'poutou']
+    df_lepen = df_final.loc[df_final['candidat'] == 'le pen']
+    df_roussel = df_final.loc[df_final['candidat'] == 'roussel']
+    df_lassalle = df_final.loc[df_final['candidat'] == 'lassalle']
+    df_null = df_final.loc[df_final['candidat'] == 'None']
+
+    if not os.path.exists(f'../web/static/img/users/{account}'):
+        os.mkdir(f'../web/static/img/users/{account}')
+
+    wordcloud(df_zemmour, account)
+    wordcloud(df_macron, account)
+    wordcloud(df_pecresse, account)
+    wordcloud(df_melenchon, account)
+    wordcloud(df_jadot, account)
+    wordcloud(df_dupont_aignan, account)
+    wordcloud(df_arthaud, account)
+    wordcloud(df_hidalgo, account)
+    wordcloud(df_poutou, account)
+    wordcloud(df_lepen, account)
+    wordcloud(df_roussel, account)
+    wordcloud(df_lassalle, account)
+    wordcloud(df_null, account)
+
+
+# create_model(preprocess=False, fit=False)
+# predict_tweets_candidats()
+# predict_tweets_user('PhilippePoutou')
