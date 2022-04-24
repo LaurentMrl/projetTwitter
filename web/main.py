@@ -7,13 +7,19 @@ from matplotlib.figure import Figure
 import matplotlib.pyplot as plt
 import base64
 import pandas as pd
+import sys
+sys.path.insert(0, '')
+
+import nltk
+nltk.download('stopwords')
+
 
 from nlp.main import predict_tweets_user, create_model
 from scrapping.scrapping import scraping_user
 
 app = Flask(__name__)
 
-
+...
 @app.route('/')
 def view_home():
     return render_template("index.html", title="Home")
@@ -74,7 +80,8 @@ def data_from_search():
     global parti_user
     if request.method == 'POST':
         twitter_user = request.form['Twitter_user']
-        scraping_user(twitter_user)
+        Twitter_count = request.form['Twitter_count']
+        scraping_user(twitter_user, Twitter_count)
         create_model(preprocess=False, fit=False)
         predict_tweets_user(twitter_user)
 

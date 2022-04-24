@@ -116,7 +116,7 @@ def create_model(preprocess: bool = True, fit: bool = True, save: bool = True, s
 
         # model scoring
         rfPreds = rfClassifier.score(vectorized_test, y_test)
-        print('model score : ' + rfPreds)
+        print(f'model score : {rfPreds}')
 
         if save:
             # if model is not name use default name
@@ -256,6 +256,6 @@ def predict_tweets_user(account: str,
     wordcloud(df_null, account)
 
 
-# create_model(preprocess=False, fit=False)
+# create_model(preprocess=False)
 # predict_tweets_candidats()
 # predict_tweets_user('PhilippePoutou')

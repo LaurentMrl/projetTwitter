@@ -45,31 +45,31 @@ api = tweepy.API(auth)
 # for friend in user.friends():
 #    print(friend.screen_name)
 
-csv_users_dir = f'{os.getcwd()}/../scrapping/csv/users/'
-
+csv_users_dir = f'{os.getcwd()}\\..\\scrapping\\csv\\users\\'
+print("\n\n\n\n\n"+os.getcwd())
 def create_csv(account: str):
     # create directory for the user
     if not os.path.exists(f'{csv_users_dir}{account}'):
         os.mkdir(f'{csv_users_dir}{account}')
     # remove csv if exists
-    if os.path.exists(f'{csv_users_dir}{account}/tweets_{account}.csv'):
-        os.remove(f'{csv_users_dir}{account}/tweets_{account}.csv')
+    if os.path.exists(f'{csv_users_dir}{account}\\tweets_{account}.csv'):
+        os.remove(f'{csv_users_dir}{account}\\tweets_{account}.csv')
 
     # create csv and column
-    with open(f'{csv_users_dir}{account}/tweets_{account}.csv', "a", encoding="utf-8-sig") as f:
+    with open(f'{csv_users_dir}{account}\\tweets_{account}.csv', "a", encoding="utf-8-sig") as f:
         write = csv.writer(f)
         write.writerow(['review'])
 
 
 # add tweets to csv
 def appendToCSV(bigList, account: str):
-    with open(f'{csv_users_dir}{account}/tweets_{account}.csv', "a", encoding="utf-8-sig") as f:
+    with open(f'{csv_users_dir}{account}\\tweets_{account}.csv', "a", encoding="utf-8-sig") as f:
         write = csv.writer(f)
         write.writerows(bigList)
     print("Tweet appened to CSV")
 
 
-def scraping_user(account: str, n: int = 1500):
+def scraping_user(account: str, n: int):
     create_csv(account)
     tweets = api.user_timeline(screen_name=account, count=n, include_rts=False, tweet_mode='extended')
     for tweet in tweets:
