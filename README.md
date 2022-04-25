@@ -12,7 +12,7 @@
 ### run with pycharm IDE main.py
 
 ## Once it's Done you need to run the main app
-### run with pycharm web/main.py
+### run with pycharm IDE web/main.py
 
 ## Now to get access
 ### In your navigator go to http://127.0.0.1:5000/
