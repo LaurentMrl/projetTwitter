@@ -8,18 +8,19 @@ import matplotlib.pyplot as plt
 import base64
 import pandas as pd
 import sys
+from nlp.main import predict_tweets_user, create_model
+from scrapping.scrapping import scraping_user
+import nltk
 sys.path.insert(0, '')
 
-import nltk
+
 nltk.download('stopwords')
 
 
-from nlp.main import predict_tweets_user, create_model
-from scrapping.scrapping import scraping_user
 
 app = Flask(__name__)
 
-...
+
 @app.route('/')
 def view_home():
     return render_template("index.html", title="Home")
@@ -75,9 +76,8 @@ def search():
     return render_template('index.html', title="Search")
 
 
-@app.route('/data_search', methods=['POST', 'GET'])
+@app.route('/data_search', methods=['POST'])
 def data_from_search():
-    global parti_user
     if request.method == 'POST':
         twitter_user = request.form['Twitter_user']
         Twitter_count = request.form['Twitter_count']
@@ -121,7 +121,7 @@ def data_from_search():
         if sum(apparition_positive_gauche) + sum(apparition_negative_gauche) != 0:
 
             result_gauche = sum(apparition_positive_gauche) * 100 / (
-                        sum(apparition_positive_gauche) + sum(apparition_negative_gauche))
+                    sum(apparition_positive_gauche) + sum(apparition_negative_gauche))
         else:
             result_gauche = 0
 
@@ -132,6 +132,7 @@ def data_from_search():
         else:
             result_droite = 0
 
+        parti_user = ''
 
         if result_gauche > result_droite:
             parti_user = 'gauche'
@@ -139,14 +140,10 @@ def data_from_search():
             parti_user = 'droite'
         if result_gauche == result_droite:
             parti_user = 'indefini'
-            if result_gauche ==0 and result_droite == 0:
+            if result_gauche == 0 and result_droite == 0:
                 return render_template('index.html', title='Search data', twitter_user=twitter_user,
                                        parti_user=parti_user,
                                        result_droite=result_droite, result_gauche=result_gauche)
-
-        # wordcloud
-        hists = os.listdir(f'static/img/users/{twitter_user}')
-        hists = [f'img/users/{twitter_user}/' + file for file in hists]
 
         # avis
         plot = plt
@@ -174,8 +171,13 @@ def data_from_search():
         # Embed the result in the html output.
         data = base64.b64encode(buf.getbuffer()).decode("ascii")
 
+        # wordcloud
+        hists = os.listdir(f'static/img/users/{twitter_user}')
+        hists = [f'img/users/{twitter_user}/' + file for file in hists]
+
         return render_template('index.html', title='Search data', twitter_user=twitter_user, parti_user=parti_user,
-                               hists=hists, len_user=len(twitter_user) * 2 + 12, img=f"{data}", result_droite=result_droite, result_gauche=result_gauche)
+                               hists=hists, len_user=len(twitter_user) * 2 + 12, img=f"{data}",
+                               result_droite=result_droite, result_gauche=result_gauche)
 
 
 def creation_graphique():

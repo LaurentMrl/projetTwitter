@@ -21,6 +21,8 @@ from spacy.lang.fr.stop_words import STOP_WORDS as fr_stop
 from joblib import dump, load
 import string
 
+
+
 csv_dir = '../scrapping/csv'
 
 ps = PorterStemmer()
@@ -123,12 +125,12 @@ def create_model(preprocess: bool = True, fit: bool = True, save: bool = True, s
             if model_name == '':
                 model_name = f'model_nlp_n_estimator_{rf_n_estimators}_criterion_{rf_criterion}_random_state_{rf_random_state}'
             # save
-            dump(rfClassifier, f"models/{model_name}.joblib")
+            dump(rfClassifier, f"{os.getcwd()}/../nlp/models/{model_name}.joblib")
 
 
 def predict_tweets_candidats(model_name: string = "model_nlp_n_estimator_400_criterion_entropy_random_state_0.joblib"):
     # load
-    rfClassifier = load(f"models/{model_name}")
+    rfClassifier = load(f"{os.getcwd()}/../nlp/models/{model_name}")
 
     # Preprocessing tweet data
     df_tweet = pd.read_csv(f"{csv_dir}/candidats/tweets.csv")
@@ -240,6 +242,10 @@ def predict_tweets_user(account: str,
 
     if not os.path.exists(f'../web/static/img/users/{account}'):
         os.mkdir(f'../web/static/img/users/{account}')
+    else:
+        dir = f'../web/static/img/users/{account}'
+        for f in os.listdir(dir):
+            os.remove(os.path.join(dir, f))
 
     wordcloud(df_zemmour, account)
     wordcloud(df_macron, account)
@@ -255,10 +261,4 @@ def predict_tweets_user(account: str,
     wordcloud(df_lassalle, account)
     wordcloud(df_null, account)
 
-
-
-
-if __name__ == "__main__":
-    create_model()
-    predict_tweets_candidats()
 

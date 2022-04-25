@@ -90,11 +90,11 @@
     <h3 style="text-align: center">Resultat : Gauche {{result_gauche}}% | Droite {{result_droite}}%</h3>
     <hr>
     {% if result_gauche == 0 and result_droite == 0 %}
-        <h4 style="text-align: center">Resultat non concluant, du 0 un manque de donnée.</h4>
+        <h4 style="text-align: center">Resultat non concluant, du à un manque de donnée.</h4>
     {% else %}
     <h4 style="text-align: center">Voici un tableau recapitulatif des avis en fonction des candidats</h4>
     <div style="text-align: center">
-        <img src="data:image/jpeg;base64, {{ img }}">
+        <img src="data:image/jpeg;base64, {{ img }}" alt="Probleme">
     </div>
 
     <h4 style="text-align: center">Voici les mots les plus utilise dans ces tweets en fonction de chaque candidats</h4>

@@ -19,10 +19,12 @@ api = tweepy.API(auth)
 
 search_word = "Zemmour"
 
-tweet_file = "csv/candidats/tweets.csv"
+tweet_file = f"csv/candidats/tweets.csv"
 
 searchList = ["Zemmour", "Macron", "Pécresse", "Mélenchon", "Jadot", "Dupont-Aignan", "Arthaud", "Hidalgo", "Poutou",
               "Le Pen", "Roussel", "Lassalle"]
+
+
 
 # remove csv if exists
 if os.path.exists(tweet_file):
@@ -67,5 +69,4 @@ def scraping(n):
                 appendToCSV(bigList)
 
 
-if __name__ == "__scrapWithKeywird__":
-    scraping(150)
+
