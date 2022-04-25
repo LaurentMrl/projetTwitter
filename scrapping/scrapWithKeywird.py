@@ -67,5 +67,5 @@ def scraping(n):
                 appendToCSV(bigList)
 
 
-scraping(150)
-
+if __name__ == "__scrapWithKeywird__":
+    scraping(150)

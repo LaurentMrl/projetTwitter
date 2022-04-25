@@ -256,6 +256,9 @@ def predict_tweets_user(account: str,
     wordcloud(df_null, account)
 
 
-# create_model(preprocess=False)
-# predict_tweets_candidats()
-# predict_tweets_user('PhilippePoutou')
+
+
+if __name__ == "__main__":
+    create_model()
+    predict_tweets_candidats()
+
